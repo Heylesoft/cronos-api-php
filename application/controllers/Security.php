@@ -15,6 +15,7 @@ class Security extends MY_RESTController {
 		$this->load->model('key');
 		$this->load->model('sessionKey');
 		$this->load->model('loginLog');
+		$this->load->model('lenguage');
 
 		$this->load->library('encryption');
 		$this->load->library('session');
@@ -35,23 +36,34 @@ class Security extends MY_RESTController {
 
 	public function login_post()
 	{
-		$responseMessage = array('status'=>'', 'message'=>'');
+		$responseMessage = array('status'=>'', 'data'=>'');
 
-		$login = $this->post('txt-login');
-		$password = $this->post('txt-password');
+		$login = $this->post('login');
+		$password = $this->post('password');
+		$location = $this->post('location');
+
+		if($location === NULL){
+			$this->lang->load('security','english');
+			$this->lang->load('general','english');
+	    } else {
+	    	$this->lenguage->setLocation($location);
+	    	$this->lenguage = $this->lenguage->getByLocation();
+	    	$this->lang->load('security',$this->lenguage->getName());
+	    	$this->lang->load('general',$this->lenguage->getName());
+	    }
 
 		if ($login === NULL)
 		{
 			$responseMessage['status'] = FALSE;
-			$responseMessage['message'] = 'Field login is required';
-			$this->response($responseMessage, MY_RESTController::HTTP_NOT_FOUND);
+			$responseMessage['data'] = sprintf($this->lang->line('msg_field_required'), "Email");
+			$this->response($responseMessage, MY_RESTController::HTTP_OK);
 		}
 
 		if ($password === NULL)
 		{
 			$responseMessage['status'] = FALSE;
-			$responseMessage['message'] = 'Field password is required';
-			$this->response($responseMessage, MY_RESTController::HTTP_NOT_FOUND);
+			$responseMessage['data'] = sprintf($this->lang->line('msg_field_required'), "Password");
+			$this->response($responseMessage, MY_RESTController::HTTP_OK);
 		}
 
 		$this->user->setEmail($login);
@@ -60,8 +72,8 @@ class Security extends MY_RESTController {
 		if($this->user->getId() == "")
 		{
 			$responseMessage['status'] = FALSE;
-			$responseMessage['message'] = 'Login/Password incorrect';
-			$this->response($responseMessage, MY_RESTController::HTTP_BAD_REQUEST);
+			$responseMessage['data'] = $this->lang->line('login_incorrect_data');
+			$this->response($responseMessage, MY_RESTController::HTTP_OK);
 		} 
 		else 
 		{
@@ -92,7 +104,7 @@ class Security extends MY_RESTController {
 						if($this->loginLog->save())
 						{
 							$responseMessage['status'] = TRUE;
-							$responseMessage['key'] = $sessionID;
+							$responseMessage['data'] = $sessionID;
 							$this->response($responseMessage, MY_RESTController::HTTP_OK);	
 						}		        		
 						else
@@ -101,7 +113,7 @@ class Security extends MY_RESTController {
 							$this->key->deleteKey($key);
 
 		        			$responseMessage['status'] = FALSE;
-							$responseMessage['message'] = 'System Error';
+							$responseMessage['data'] = $this->lang->line('system_error');
 							$this->response($responseMessage, MY_RESTController::HTTP_INTERNAL_SERVER_ERROR);
 						}
 		        	}
@@ -110,22 +122,22 @@ class Security extends MY_RESTController {
 		        		$this->key->deleteKey($key);
 
 		        		$responseMessage['status'] = FALSE;
-						$responseMessage['message'] = 'System Error';
+						$responseMessage['data'] = $this->lang->line('system_error');
 						$this->response($responseMessage, MY_RESTController::HTTP_INTERNAL_SERVER_ERROR);
 		        	}
 		        }
 		        else
 		        {
 		        	$responseMessage['status'] = FALSE;
-					$responseMessage['message'] = 'Could not save the key';
+					$responseMessage['data'] = $this->lang->line('dont_save_key');
 		            $this->response($responseMessage, MY_RESTController::HTTP_INTERNAL_SERVER_ERROR);
 		        }
 			} 
 			else 
 			{
 			    $responseMessage['status'] = FALSE;
-				$responseMessage['message'] = 'Login/Password incorrect';
-				$this->response($responseMessage, MY_RESTController::HTTP_BAD_REQUEST);
+				$responseMessage['data'] = $this->lang->line('login_incorrect_data');
+				$this->response($responseMessage, MY_RESTController::HTTP_OK);
 			}			
 		}
 	}
