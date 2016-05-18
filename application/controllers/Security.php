@@ -87,7 +87,8 @@ class Security extends MY_RESTController {
 		        {
 		        	$userData = array(
 						'user' => $this->user->getId(),
-						'key' => $key
+						'key' => $key,
+						'location' => $this->lenguage->getName()
 					);
 
 					$this->session->set_userdata($userData);

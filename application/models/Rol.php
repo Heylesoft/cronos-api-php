@@ -5,11 +5,36 @@ class Rol extends CI_Model {
 
 	private $id;
     private $name;
-    private $description;
 
     public function __construct()
     {
     	parent::__construct();
+
+        $this->load->model('textValue');
+        $this->load->library('session');
+    }
+
+    public function getById()
+    {
+        $this->db->where('id', $this->id);
+        $query = $this->db->get('rol');
+        $rowRol = $query->row();
+
+        if(isset($rowRol))
+        {
+            $this->textValue->setKey($rowRol->name);
+
+            $location = $this->session->userdata('location');
+            
+            if($location != null)
+                $this->name = $this->textValue->getByKeyAndLenguage($location);
+
+            return $this;
+        }
+
+        //TODO: Return error by ID
+        return null;
+
     }
 
     // Getters & Setters
@@ -18,7 +43,4 @@ class Rol extends CI_Model {
 
     public function getName(){ return $this->name; }
     public function setName($name){ $this->name = $name; }
-
-    public function getDescription(){ return $this->description; }
-    public function setDescription($description){ $this->description = $description; }
 }

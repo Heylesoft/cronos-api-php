@@ -9,6 +9,7 @@ class User extends CI_Model {
     private $email;
     private $password;
     private $birthday;
+    private $rol;
 
     public function __construct()
     {
